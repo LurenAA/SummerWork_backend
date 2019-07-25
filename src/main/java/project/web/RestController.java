@@ -10,10 +10,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import project.service.LoginState;
 import project.service.UserInfoOperations;
 
 import javax.print.DocFlavor;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -67,6 +71,21 @@ public class RestController {
             headers.add("token", token);
             AuthenticationInterceptor.loginStateTokens.put(inf.get("account"), token);
             return new ResponseEntity<Map<String, String>>(resp,headers,HttpStatus.OK);
+        }
+        return new ResponseEntity<Map<String, String>>(resp, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.POST,
+            value="/upload",produces="application/json;charset=utf-8")
+    public ResponseEntity<Map<String, String>> handlePostUploadArticle
+            (HttpServletRequest request)
+        throws IOException
+    {
+        Map<String, String> resp = new HashMap<String, String>();
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
+        String[] str = multipartRequest.getParameterValues("name");
+        for(int i =0 ; i < str.length; i++) {
+            System.out.print(str[i]);
         }
         return new ResponseEntity<Map<String, String>>(resp, HttpStatus.OK);
     }
