@@ -16,4 +16,11 @@ public class DaoConfig {
         newUserDaoImp.setJdbc(jdbc);
         return newUserDaoImp;
     }
+
+    @Bean
+    ArticleDao articleDaoImp(NamedParameterJdbcOperations jdbc) {
+        ArticleDaoImp newOne = new ArticleDaoImp();
+        newOne.setJdbc(jdbc);
+        return newOne;
+    }
 }
