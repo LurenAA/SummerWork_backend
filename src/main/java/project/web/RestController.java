@@ -1,5 +1,7 @@
 package project.web;
 
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -13,16 +15,22 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import project.dao.Article;
+import project.dao.Members;
+import project.dao.UserInfo;
 import project.service.ArticleOperations;
 import project.service.LoginState;
+import project.service.MembersOperations;
 import project.service.UserInfoOperations;
 
 import javax.print.DocFlavor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+
 
 /**
  * restAPI接口实现
@@ -32,10 +40,21 @@ import java.util.*;
 @CrossOrigin
 public class RestController {
     @Autowired
+    private MembersOperations membersOpera;
+
+    @Autowired
     private ArticleOperations articleOpera;
 
     @Autowired
     private UserInfoOperations userInfoOp;
+
+    public void setMembersOpera(MembersOperations membersOpera) {
+        this.membersOpera = membersOpera;
+    }
+
+    public MembersOperations getMembersOpera() {
+        return membersOpera;
+    }
 
     public UserInfoOperations getUserInfoOp() {
         return userInfoOp;
@@ -90,6 +109,48 @@ public class RestController {
         return new ResponseEntity<Map<String, String>>(resp, HttpStatus.OK);
     }
 
+    @RequestMapping(method = RequestMethod.GET,
+        value="/deleteMembers")
+    public ResponseEntity<Boolean> handleDeleteMembers
+            (@RequestParam("id") int id){
+        boolean res = false;
+        res = membersOpera.deleteMembers(id);
+        return new ResponseEntity<Boolean>(res, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.POST,
+            value="/uploadMembers",produces="application/json;charset=utf-8")
+    public ResponseEntity<Boolean> handlePostUploadMembers
+            (HttpServletRequest request)
+            throws IOException
+    {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest)request;
+        String name = formDataTranslateToUTF8(multipartRequest.getParameterValues("name")[0]);
+        int age = Integer.valueOf(multipartRequest.getParameterValues("age")[0]);
+        int id = Integer.valueOf(formDataTranslateToUTF8(multipartRequest.getParameterValues("id")[0]));
+        String post = formDataTranslateToUTF8(multipartRequest.getParameterValues("post")[0]);
+        String event = formDataTranslateToUTF8(multipartRequest.getParameterValues("event")[0]);;;
+        MultipartFile file = multipartRequest.getFile("file");
+        String a , filePath;
+        if(file != null) {
+            filePath = request.getServletContext().getRealPath("/images");
+            a = "http://localhost:8088/test/images/" + uploadFile(file, filePath);
+        } else {
+            a = "";
+        }
+
+        Members newOne = new Members();
+        newOne.setName(name);
+        newOne.setPost(post);
+        newOne.setPhoto(a);
+        newOne.setId(id);
+        newOne.setAge(age);
+        newOne.setEvent(event);
+        boolean res = membersOpera.insertOrUpdate(newOne);
+        return new ResponseEntity<Boolean>(res, HttpStatus.OK);
+    }
+
+
     @RequestMapping(method = RequestMethod.POST,
             value="/upload",produces="application/json;charset=utf-8")
     public ResponseEntity<Boolean> handlePostUploadArticle
@@ -133,5 +194,66 @@ public class RestController {
         resp.put("article", pas);
         resp.put("simpleDes",a.getSimpleDes());
         return new ResponseEntity<Map<String, Object>>(resp, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+            value="/getMembersNames")
+    public ResponseEntity<List<String>> getArticleInfo
+            (HttpServletResponse response) {
+        return new ResponseEntity<List<String>>(membersOpera.getMembersNames(),HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+            value="/getMembersInfo")
+    public ResponseEntity<Map<String, Object>> getMemberInfo
+            (@RequestParam("name") String name, HttpServletResponse response) {
+        response.setCharacterEncoding("UTF-8");
+        Map<String, Object> resp = new HashMap<String, Object>();
+        Members re = membersOpera.getMemberInof(name);
+        resp.put("id", re.getId());
+        resp.put("name", re.getName());
+        resp.put("age", re.getAge());
+        resp.put("event", re.getEvent());
+        resp.put("post",re.getPost());
+        resp.put("photo",re.getPhoto());
+        return new ResponseEntity<Map<String, Object>>(resp, HttpStatus.OK);
+    }
+
+    public static String uploadFile(MultipartFile multipartFile, String dirPath) throws IOException {
+        String fileName = multipartFile.getOriginalFilename();
+        String fileSuffix = fileName.substring(fileName.lastIndexOf("."), fileName.length());
+        String localFileName = System.currentTimeMillis() + fileSuffix;
+        String filePath = dirPath + File.separator + localFileName;
+        File localFile = new File(filePath);
+        File imagePath = new File(dirPath);
+        if (!imagePath.exists()) {
+            imagePath.mkdirs();
+        }
+        multipartFile.transferTo(localFile);
+        return localFileName;
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+            value="/getUserFundemetalInfo")
+    public ResponseEntity<Map<String, Object>> getUserFundemetalInfo
+            (@RequestParam("account") String account) {
+        UserInfo u = userInfoOp.getUserInfoExepcetPassWord(account);
+        Map<String, Object> newMap = new HashMap<String, Object>();
+        newMap.put("account", u.getAccount());
+        newMap.put("username", u.getUsername());
+        newMap.put("level", u.getLevel());
+        newMap.put("deprecate", u.getDeprecate());
+        return new ResponseEntity<Map<String, Object>>(newMap, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.POST,
+            value="/setHostPageArticles")
+    public ResponseEntity<Boolean> setHostPageSign(@RequestBody String param)
+            throws IOException
+    {
+        JSONObject jsonObject = new JSONObject();
+        JSONObject jo = JSONObject.parseObject(param);
+
+        return new ResponseEntity<Boolean>(true, HttpStatus.OK);
     }
 }

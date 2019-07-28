@@ -10,4 +10,5 @@ import java.util.List;
 public interface UserInfoDao {
     List<UserInfo> getUserInfo(String account, String passwd);
     String getUserName(String account);
+    List<UserInfo> getUserInfoExepcetPassWord(String account);
 }

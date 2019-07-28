@@ -23,4 +23,11 @@ public class DaoConfig {
         newOne.setJdbc(jdbc);
         return newOne;
     }
+
+    @Bean
+    MembersDao membersDaoImp(NamedParameterJdbcOperations jdbc) {
+        MembersDaoImp newOne = new MembersDaoImp();
+        newOne.setJdbc(jdbc);
+        return newOne;
+    }
 }

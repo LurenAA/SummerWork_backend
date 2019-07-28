@@ -52,4 +52,8 @@ public class UserInfoOperations {
     public String getUserName(String account) {
         return userInfoDaoImp.getUserName(account);
     }
+
+    public UserInfo getUserInfoExepcetPassWord(String account) {
+        return userInfoDaoImp.getUserInfoExepcetPassWord(account).get(0);
+    }
 }

@@ -49,6 +49,15 @@ public class UserInfoDaoImp implements UserInfoDao{
         return null;
     }
 
+    @Override
+    public List<UserInfo> getUserInfoExepcetPassWord(String account) {
+        String SQL = "SELECT * FROM lab_users " +
+                "WHERE account=:account";
+        Map<String, String> mapParams = new HashMap<String, String>();
+        mapParams.put("account", account);
+        return jdbc.query(SQL, mapParams, new RowMapperForUserInfo());
+    }
+
     private static class RowMapperForUserInfo implements RowMapper<UserInfo> {
         @Override
         public UserInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
