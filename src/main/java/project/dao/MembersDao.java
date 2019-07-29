@@ -8,4 +8,5 @@ public interface MembersDao {
     List<String> getMembersNames();
     Members getMemberInof(String name);
     boolean deleteMembers(int id);
+    List<Members> getMembers();
 }

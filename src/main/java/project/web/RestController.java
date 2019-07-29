@@ -17,10 +17,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import project.dao.Article;
 import project.dao.Members;
 import project.dao.UserInfo;
-import project.service.ArticleOperations;
-import project.service.LoginState;
-import project.service.MembersOperations;
-import project.service.UserInfoOperations;
+import project.service.*;
 
 import javax.print.DocFlavor;
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 
@@ -40,6 +38,9 @@ import java.util.*;
 @CrossOrigin
 public class RestController {
     @Autowired
+    private CommentOperation commentOperation;
+
+    @Autowired
     private MembersOperations membersOpera;
 
     @Autowired
@@ -47,6 +48,14 @@ public class RestController {
 
     @Autowired
     private UserInfoOperations userInfoOp;
+
+    public CommentOperation getCommentOperation() {
+        return commentOperation;
+    }
+
+    public void setCommentOperation(CommentOperation commentOperation) {
+        this.commentOperation = commentOperation;
+    }
 
     public void setMembersOpera(MembersOperations membersOpera) {
         this.membersOpera = membersOpera;
@@ -253,7 +262,54 @@ public class RestController {
     {
         JSONObject jsonObject = new JSONObject();
         JSONObject jo = JSONObject.parseObject(param);
-
+        List<String> s = (List<String>) jo.get("value");
+        Integer col = (Integer) jo.get("index");
+        boolean res = articleOpera.setArticleColumn(s, col);
         return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+            value="/getNamesByCols")
+    public ResponseEntity<List<String>> getNamesByCols(@RequestParam("col") int col)
+            throws IOException
+    {
+        List<String> s = articleOpera.getArticleNamesByCol(col);
+        return new ResponseEntity<List<String>>(s, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+            value="/getContentByCols")
+    public ResponseEntity<List<Map<String, Object>> > getContentByCols
+            (@RequestParam("col") int col, HttpServletResponse response){
+        List<Map<String, Object>>  s = articleOpera.getArticleContentByCol(col);
+        return new ResponseEntity<List<Map<String, Object>> >(s, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+            value="/getMembersAll")
+    public ResponseEntity<List<Map<String, Object>> > getMembersAll
+            (){
+        List<Map<String, Object>>  s = membersOpera.getMembers();
+        return new ResponseEntity<List<Map<String, Object>> >(s, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
+            value="/getComment")
+    public ResponseEntity<List<Map<String, Object>> > getComment(@RequestParam("name") String name) {
+        List<Map<String, Object>>  s = commentOperation.getComments(name);
+        return new ResponseEntity<List<Map<String, Object>> >(s, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.POST,
+            value="/setComment")
+    public ResponseEntity<Boolean> setComment(@RequestBody String param)
+            throws IOException
+    {
+        JSONObject jsonObject = new JSONObject();
+        JSONObject jo = JSONObject.parseObject(param);
+        String com = (String) jo.get("value");
+        String articleTitle = (String) jo.get("title");
+        boolean res = commentOperation.setComment(articleTitle, com);
+        return new ResponseEntity<Boolean>(res, HttpStatus.OK);
     }
 }

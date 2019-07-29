@@ -30,4 +30,11 @@ public class DaoConfig {
         newOne.setJdbc(jdbc);
         return newOne;
     }
+
+    @Bean
+    CommentDao commentDaoImp(NamedParameterJdbcOperations jdbc) {
+        CommentDaoImp newOne = new CommentDaoImp();
+        newOne.setJdbc(jdbc);
+        return newOne;
+    }
 }

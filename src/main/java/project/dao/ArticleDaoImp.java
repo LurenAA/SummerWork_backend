@@ -61,6 +61,50 @@ public class ArticleDaoImp implements ArticleDao{
         return jdbc.query(SQL, mapParams, new RowMa());
     }
 
+    @Override
+    public boolean setArticleColumn(List<String> s, int col) {
+        String coll = "columnId" + col;
+        String SQL = "UPDATE lab_articles SET " + coll + "= ''";
+        Map<String, Object> mapParams = new HashMap<String, Object>();
+        try {
+            jdbc.update(SQL, mapParams);
+        } catch(Exception e) {
+            return false;
+        }
+        String whe = "";
+        for(int i = 0;i < s.size(); i++) {
+            if (i != s.size() - 1) {
+                whe += s.get(i) + "|";
+            } else {
+                whe += s.get(i) + "";
+            }
+        }
+        SQL = "UPDATE lab_articles SET " + coll +" = 'true' WHERE title REGEXP '" + whe + "'";
+        try {
+            System.out.println(jdbc.update(SQL, mapParams));
+        } catch(Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public List<String> getArticleNamesByCol(int col) {
+        String SQL = "SELECT title FROM lab_articles WHERE columnId" + col + " = 'true'";
+        Map<String, String> mapParams = new HashMap<String, String>();
+        return jdbc.queryForList(SQL, mapParams, String.class);
+    }
+
+    @Override
+    public List<Article> getArticleContentByCol(int col) {
+        String SQL = "SELECT * FROM lab_articles WHERE columnId" + col + " = 'true'";
+        if(col == -1) {
+            SQL = "SELECT * FROM lab_articles";
+        }
+        Map<String, String> mapParams = new HashMap<String, String>();
+        return jdbc.query(SQL, mapParams, new RowMa());
+    }
+
     public static class RowMa implements RowMapper<Article> {
 
         @Override

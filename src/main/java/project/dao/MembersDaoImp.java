@@ -67,6 +67,13 @@ public class MembersDaoImp implements MembersDao{
         return true;
     }
 
+    @Override
+    public List<Members> getMembers() {
+        String SQL = "SELECT * FROM lab_members";
+        Map<String, String> mapParams = new HashMap<String, String>();
+        return jdbc.query(SQL, mapParams, new RowMa());
+    }
+
     public static class RowMa implements RowMapper<Members> {
         @Override
         public Members mapRow(ResultSet rs, int rowNum) throws SQLException {
