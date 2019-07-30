@@ -29,15 +29,15 @@ public class ArticleDaoImp implements ArticleDao{
 
     @Override
     public boolean saveArticle(Article newOne) {
-        String SQL = "INSERT INTO lab_articles(title, author,simpleDes,date,article,columnIds) "
-         + "VALUE(:title, :author,:simpleDes,:date,:article,:columnIds)";
+        String SQL = "INSERT INTO lab_articles(title, author,simpleDes,date,article) "
+         + "VALUE(:title, :author,:simpleDes,:date,:article)";
         Map<String, String> mapParams = new HashMap<String, String>();
         mapParams.put("author", newOne.getAuthor());
         mapParams.put("title", newOne.getName());
         mapParams.put("simpleDes", newOne.getSimpleDes());
         mapParams.put("date", newOne.getDate());
         mapParams.put("article", newOne.getArticle());
-        mapParams.put("columnIds", "");
+//        mapParams.put("columnIds", "");
         try {
             jdbc.update(SQL, mapParams);
         } catch(Exception e) {
